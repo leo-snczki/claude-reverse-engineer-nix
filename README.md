@@ -86,9 +86,9 @@ converted line endings.
 
 ### macOS
 
-Run `nix run` as above. For lldb and Swift, install Xcode or the Command
-Line Tools (`xcode-select --install`). The Docker variant (`#docker`) is
-Linux only.
+Run `nix run` as above. lldb needs Apple's signed debugserver to attach,
+which only comes with Xcode or the Command Line Tools
+(`xcode-select --install`). The Docker variant (`#docker`) is Linux only.
 
 ## Docker
 

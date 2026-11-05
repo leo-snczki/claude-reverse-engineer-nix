@@ -13,8 +13,8 @@
   (`DevToolsSecurity -enable`), and apps with the hardened runtime can't be
   attached or injected (lldb, Frida) unless re-signed with
   `get-task-allow` or with SIP off: ask the user before either.
-- Compile: `clang` (Nix) for C, C++ and Objective-C. Swift and Xcode
-  projects use the system Xcode (`xcrun swiftc`, `xcodebuild`), which is
-  not in Nix. Signing: the system `codesign`.
+- Compile: `clang` for C, C++ and Objective-C, `swiftc` and `swift build`
+  for Swift (all from Nix). Xcode projects (`xcodebuild`) need the system
+  Xcode, which can't be in Nix. Signing: the system `codesign`.
 - Browsers: there is no Chromium in Nix for macOS. `$CHROME_PATH` points to
   Google Chrome when it is installed.

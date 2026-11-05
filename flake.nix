@@ -121,9 +121,11 @@
             ipsw
             # gdb can't debug on Apple Silicon
             lldb
-            # Compile C, C++ and Objective-C (Swift and Xcode projects use the
-            # system Xcode)
+            # Compile C, C++ and Objective-C
             clang
+            # Compile Swift (swiftc) and Swift packages (swift build)
+            swift
+            swiftpm
           ] else [
             chromium
             binutils
