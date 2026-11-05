@@ -4,7 +4,7 @@
 
 let
   # The flake's CLAUDE.md plus notes on the container.
-  claude = mkClaude (pkgs.concatText "CLAUDE.md" [ ../CLAUDE.md ./CLAUDE.md ]);
+  claude = mkClaude [ ./CLAUDE.md ];
 
   contents = with pkgs; [
     claude

@@ -11,13 +11,14 @@ Skills (from this flake's plugin):
 - `reverse-engineer-anything`: reverse engineer binaries, packaged and
   Electron/JS apps, firmware and web apps when the answer depends on the
   shipped artifact rather than source code. The skill gives the workflow;
-  the `rea` MCP server gives the tools, so use both together. `file`,
-  `binutils`, `gdb` and `rizin` are installed.
+  the `rea` MCP server gives the tools, so use both together.
 - `reverse-api-engineer`: turn a website's private HTTP API into a typed
   client with the `reverse-api-engineer` CLI (installed).
 - `replica-*`: clone an app end to end (recon, architecture, design,
   build, backend, tests, parity diff, reviews, rebranding, launch, deploy).
 
-Browsers: Chromium is at `$CHROME_PATH` and Playwright's at
-`$PLAYWRIGHT_BROWSERS_PATH`. For Playwright, install `@playwright/test` at
-the version matching the nixpkgs browsers and skip `npx playwright install`.
+Tools on every platform: `file`, `rizin` with the Ghidra decompiler
+(`pdg` decompiles the current function), Frida (`frida`, `frida-trace`),
+Node and Python. Playwright's browsers are at `$PLAYWRIGHT_BROWSERS_PATH`:
+install `@playwright/test` at the version matching them and skip
+`npx playwright install`.

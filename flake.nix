@@ -36,7 +36,7 @@
   outputs = { self, nixpkgs, claude-code, llm-agents, rea, replica-skill, reverse-api-engineer }:
     let
       lib = nixpkgs.lib;
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       forAllSystems = f: lib.genAttrs systems (system: f (import nixpkgs {
         inherit system;
         overlays = [ claude-code.overlays.default ];
@@ -98,32 +98,59 @@
             };
           });
 
-          # What the skills and MCP servers call, on Claude's PATH.
+          inherit (pkgs.stdenv.hostPlatform) isDarwin;
+
+          # What the skills and MCP servers call, on Claude's PATH. REA drives
+          # the native analysis tools it finds.
           tools = with pkgs; [
             rae
             rea-mcp
             agent-browser
             nodejs_26
             python3
-            chromium
-            # Native analysis tools REA drives when they are present
             file
+            # rizin with the Ghidra decompiler (`pdg`)
+            (rizin.withPlugins (ps: [ ps.rz-ghidra ]))
+            frida-tools
+          ] ++ (if isDarwin then [
+            # Mach-O: otool, lipo, install_name_tool; llvm-objdump, llvm-nm
+            cctools
+            llvm
+            # Objective-C and Swift metadata (class-dump, swift-dump), Mach-O,
+            # dyld shared cache
+            ipsw
+            # gdb can't debug on Apple Silicon
+            lldb
+            # Compile C, C++ and Objective-C (Swift and Xcode projects use the
+            # system Xcode)
+            clang
+          ] else [
+            chromium
             binutils
             gdb
-            rizin
-          ];
+          ]);
+
+          # Notes for Claude on this platform's tools, after the shared ones.
+          platformNotes = if isDarwin then ./platforms/darwin.md else ./platforms/linux.md;
 
           # Claude Code with only this flake's CLAUDE.md, plugin, MCP servers
           # and settings. Its own config dir keeps ~/.claude (global CLAUDE.md,
           # skills, MCP servers, hooks) out, and holds a separate login.
-          mkClaude = claudeMd: pkgs.writeShellScriptBin "claude" ''
+          # extraNotes are appended to CLAUDE.md (the Docker image adds its own).
+          mkClaude = extraNotes: pkgs.writeShellScriptBin "claude" ''
             export CLAUDE_CONFIG_DIR="''${XDG_DATA_HOME:-$HOME/.local/share}/${name}"
             mkdir -p "$CLAUDE_CONFIG_DIR"
-            ln -sfn ${claudeMd} "$CLAUDE_CONFIG_DIR/CLAUDE.md"
+            ln -sfn ${pkgs.concatText "CLAUDE.md" ([ ./CLAUDE.md platformNotes ] ++ extraNotes)} "$CLAUDE_CONFIG_DIR/CLAUDE.md"
             export PATH=${lib.makeBinPath tools}:$PATH
-            export CHROME_PATH=${lib.getExe pkgs.chromium}
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers-chromium}
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+            ${if isDarwin then ''
+              # No Chromium in nixpkgs for macOS: use Google Chrome when installed.
+              chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+              [ -x "$chrome" ] && export CHROME_PATH="$chrome"
+            '' else ''
+              export CHROME_PATH=${lib.getExe pkgs.chromium}
+            ''}
             exec ${pkgs.claude-code}/bin/claude \
               --plugin-dir ${plugin} \
               --strict-mcp-config --mcp-config ${mcpConfig} \
@@ -131,12 +158,14 @@
               "$@"
           '';
 
-          claude = mkClaude ./CLAUDE.md;
+          claude = mkClaude [ ];
         in
         {
           inherit claude plugin rae rea-mcp;
           default = claude;
-          # Optional: the same Claude in a Docker container (docker/).
+        }
+        # Optional: the same Claude in a Docker container (docker/), Linux only.
+        // lib.optionalAttrs (!isDarwin) {
           docker = import ./docker { inherit pkgs lib name mkClaude tools; };
         });
 
@@ -153,6 +182,8 @@
             type = "app";
             program = "${packages.claude}/bin/claude";
           };
+        }
+        // lib.optionalAttrs (packages ? docker) {
           docker = {
             type = "app";
             program = "${packages.docker}/bin/${name}-docker";
