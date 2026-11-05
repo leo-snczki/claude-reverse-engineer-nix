@@ -87,15 +87,13 @@ converted line endings.
 ### macOS
 
 Run `nix run` as above. For lldb and Swift, install Xcode or the Command
-Line Tools (`xcode-select --install`). The Docker sandbox (`#docker`) is
+Line Tools (`xcode-select --install`). The Docker variant (`#docker`) is
 Linux only.
 
-## Docker sandbox
+## Docker
 
-For working with code or binaries you don't trust, run the same Claude in
-a Docker container: it only sees the current directory, not your home, SSH
-keys or tokens, so `--dangerously-skip-permissions` is a smaller risk. See
-[docker/](docker/README.md).
+`#docker` runs the same Claude in a Docker container that only sees the
+current directory. See [docker/](docker/README.md).
 
 ## Update
 

@@ -1,16 +1,15 @@
-# Docker sandbox
+# Docker
 
 The same Claude as the flake's default (Claude Code, plugin, `rea` MCP
-server, tools), run in a Docker container. Use it when you work with code
-or binaries you don't trust, such as running an unknown sample: Claude
-only sees the current directory, mounted at `/work`, and not your home,
-SSH keys, tokens or other projects.
+server, tools), run in a Docker container. Claude only sees the current
+directory, mounted at `/work`; the rest of the host (your home, other
+projects) stays out of reach. Linux only.
 
 `IS_SANDBOX=1` is set, so `--dangerously-skip-permissions` is allowed
-inside the container. The container still has network access.
+inside the container.
 
-On a machine with Nix and no need for isolation, plain `nix run` (see the
-[main README](../README.md)) is simpler and faster.
+Without that need, plain `nix run` (see the [main README](../README.md))
+is simpler and faster.
 
 ## Run
 
